@@ -1,25 +1,24 @@
-module Node (
-    Node(..)
-  , runNode
-  ) where
+{-# LANGUAGE FlexibleInstances, MultiParamTypeClasses #-}
+{-# LANGUAGE DeriveDataTypeable #-}
+{-# LANGUAGE DeriveFunctor #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 
-import Data.Functor ()
-import Control.Monad ()
-import Control.Applicative ()
+module Node where
 
-data Node a = Node a
+import Control.Monad.Trans.State.Lazy
+import Control.Monad.State
+import Control.Monad
 
-runNode :: Node a -> a
-runNode (Node a) = a
+newtype NodeState a = NodeState { contents :: a }
+  deriving (Eq, Ord, Show, Functor)
 
-instance Functor Node where
-  fmap f (Node a) = Node (f a)
+instance Applicative NodeState where
+  pure a = NodeState a
+  (NodeState fab) <*> (NodeState a) = NodeState (fab a)
 
-instance Applicative Node where
-  pure a = Node a
-  (Node fab) <*> (Node b) = Node (fab b)
-
-instance Monad Node where
+instance Monad NodeState where
   return = pure
-  (Node a) >>= faNb = faNb a
+  (NodeState a) >>= famb = famb a
+
+type Node a = State (NodeState a)
 
