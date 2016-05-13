@@ -8,7 +8,7 @@ instance Eq a => EqProp (NodeState a) where
   (=-=) = eq
 
 instance Arbitrary a => Arbitrary (NodeState a) where
-  arbitrary = NodeState Follower <$> arbitrary
+  arbitrary = (pure :: a -> NodeState a) <$> arbitrary
 
 
 
