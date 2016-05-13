@@ -9,16 +9,21 @@ import Control.Monad.Trans.State.Lazy
 import Control.Monad.State
 import Control.Monad
 
-newtype NodeState a = NodeState { contents :: a }
-  deriving (Eq, Ord, Show, Functor)
+data NodeState a = NodeState {
+    status    :: NodeStatus
+  , contents  :: a
+  } deriving (Eq, Ord, Show, Functor)
+
+data NodeStatus = Follower | Candidate | Leader
+  deriving (Eq, Ord, Show)
 
 instance Applicative NodeState where
-  pure a = NodeState a
-  (NodeState fab) <*> (NodeState a) = NodeState (fab a)
+  pure a = NodeState Follower a
+  (NodeState _ fab) <*> (NodeState s a) = NodeState s (fab a)
 
 instance Monad NodeState where
   return = pure
-  (NodeState a) >>= famb = famb a
+  (NodeState _ a) >>= famb = famb a
 
 type Node a = State (NodeState a) (NodeState a)
 

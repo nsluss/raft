@@ -15,7 +15,7 @@ spec = do
   describe "an internal node's state" $ do
     describe "Getting a value from a single node" $ do
       it "should return the value of the node" $ do
-        contents (NodeState 1) `shouldBe` (1 :: Int)
+        contents (NodeState Follower 1) `shouldBe` (1 :: Int)
 
     describe "Typeclass laws for NodeState" $ do
       it "should satisfy all of them!" $ do
@@ -26,10 +26,10 @@ spec = do
   describe "A client" $ do
     it "can send a server a value" $ do
       let x = 2
-          cState = NodeState x
+          cState = NodeState Follower x
           sState = (+1) <$> cState
           client      = return cState :: Node Int
           toServer    = return sState :: Node Int
           newServer   = sendFrom client toServer
-      (evalNode newServer sState) `shouldBe` (NodeState x :: NodeState Int)
+      contents (evalNode newServer sState) `shouldBe` (x :: Int)
 
