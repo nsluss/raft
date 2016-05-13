@@ -23,6 +23,10 @@ spec = do
         quickBatch (applicative (undefined :: NodeState (String, String, String) ) )
         quickBatch (monad       (undefined :: NodeState (String, String, String) ) )
 
+    describe "Initializing a node" $ do
+      it "starts it as a Follower" $ do
+        status (pure 2 :: NodeState Int) `shouldBe` (Follower :: NodeStatus)
+
   describe "A client" $ do
     it "can send a server a value" $ do
       let x = 2
