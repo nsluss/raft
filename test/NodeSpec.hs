@@ -2,13 +2,13 @@ module NodeSpec where
 
 import Node
 
-
 import Test.Hspec
 import Test.QuickCheck
 import Test.QuickCheck.Checkers
 import Test.QuickCheck.Classes
 
 import TestOrphans
+import Control.Monad.Trans.State.Lazy
 
 spec :: SpecWith ()
 spec = do
@@ -23,11 +23,13 @@ spec = do
         quickBatch (applicative (undefined :: NodeState (String, String, String) ) )
         quickBatch (monad       (undefined :: NodeState (String, String, String) ) )
 
-  -- describe "A client-server relationship" $ do
-  --   it "can have the client send a value to the server" $ do
-  --     let x = 2
-  --         client = pure x :: N
-  --         toServer = pure (x + 1) :: N
-  --         response = sendFrom client toServer
-  --     evalNodeT response `shouldBe` (x :: IO Int)
+  describe "A client" $ do
+    it "can send a server a value" $ do
+      let x = 2
+          cState = NodeState x
+          sState = (+1) <$> cState
+          client      = return cState :: Node Int
+          toServer    = return sState :: Node Int
+          newServer   = sendFrom client toServer
+      (evalNode newServer sState) `shouldBe` (NodeState x :: NodeState Int)
 

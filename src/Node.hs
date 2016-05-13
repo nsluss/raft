@@ -20,5 +20,11 @@ instance Monad NodeState where
   return = pure
   (NodeState a) >>= famb = famb a
 
-type Node a = State (NodeState a)
+type Node a = State (NodeState a) (NodeState a)
+
+evalNode :: Node a -> NodeState a -> NodeState a
+evalNode cur init = ((evalState cur) init)
+
+sendFrom :: Node a -> Node a -> Node a
+sendFrom = const
 

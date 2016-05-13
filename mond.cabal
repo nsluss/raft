@@ -58,6 +58,8 @@ test-suite mond-test
   main-is:             Spec.hs
   build-depends:       base
                      , mond
+                     , mtl
+                     , transformers
                      , hspec
                      , QuickCheck
                      , checkers
