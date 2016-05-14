@@ -68,4 +68,54 @@ a complex set of next-actions and reduce it to a single simplification. Leader
 election is an example of this, as it doesn't matter which node should be chosen
 next, so we can select one from our cluster at random.
 
-###
+### Overview
+
+From a high-level: raft first elects a leader, then gives that leader complete
+responsibility for managing the replicated log. The leader accepts logs from clients,
+replicates them on other servers, and tells servers when it is safe to apply log
+entries to state machines. If a leader hits a fault or becomes disconnected from the
+cluster, a new leader is elected.
+
+At any given time, a server is in one of three states:
+ + Leader: as detailed above
+ + Follower: a follower only responds to requests from leaders and candidates. it
+   issues no requests and simply relays requests from clients to the leader.
+ + Candidate: this state is only used to elect a new leader.
+
+Normally, there is exactly one leader and no candidates.
+
+Time is divided into _terms_ of arbitrary length and are numbered with monotomicly
+incrementing numbers. Each term begins with an election, where any candidates may
+attempt to become the leader. If a candidate wins the election, then it serves as
+leader for the rest of the term. In the case of a split-vote election, the term will
+end with no leader, and a new term will start shortly thereafter.
+
+Servers may observe transitions between terms at different times, a server may not
+observe an election, and a server may not observe a full term. Each server stores the
+number of its current term, which is exchanged whenever servers communicate:
+ + if one server's current term is smaller than the others, then the term is updated
+   to the large of the two
+ + if a candidate or leader discovers that its term is out-of-date, it immediately
+   reverts to a follower state.
+ + if a server recieves a request with a stale term number, it rejects the request.
+
+Raft servers communicate using remote procedure calls (RPC). The basic consensus
+algorithm requires only two types of RPCs: RequestVote (initiated by candidates
+during election), and AppendEntries (initiated by leaders to replicate log entries,
+and as a form of heartbeat). A third, optional, RPC is included as a means of
+transferring snapshots between servers. Servers retry RPCs if they do not recieve a
+response in a timely manner, they also issue RPCs in parallel for the best
+performance.
+
+In the following sections we will explain the Raft implementation in more detail,
+decomposed into sub-problems outlined in the original paper. These sections are:
+ + [Leader Election][#leader-election]: "A new leader must be closen when an existing
+   leader fails"
+ + [Log Replication][#log-replication]: "The leader must accept log entries from
+   clients and replicate them across the cluster, forcing other logs to agree with
+   its own."
+ + [Safety][#safety]: "If any server has applied a particular log entry to its state
+   machine, then no other server may apply a different command for the same log
+   index."
+
+[raft-state-machine]:https://adriancolyer.files.wordpress.com/2015/03/raft.jpg
