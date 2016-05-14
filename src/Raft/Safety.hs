@@ -1,0 +1,1 @@
+module Safety where\n
