@@ -8,6 +8,12 @@ Roadmap:
  - Byantine-Fault Tolerance
  - Security
 
+### Development
+
+For development, we use `stack` and `hspec` under make. Check out our Makefile for
+up-to-date commands. `make` will delegate to `stack install`, `make test` will run
+`stack test`, and `make watch-tests` will run `stack test --file-watch`.
+
 ### Consensus Algorithms
 
 You can most easily think of a consensus algorithms arising from the need to
